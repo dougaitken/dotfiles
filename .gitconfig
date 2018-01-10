@@ -1,0 +1,56 @@
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[user]
+	name = Doug Aitken
+	email = git@dougaitken.co.uk
+
+
+[alias]
+	co = checkout
+	cob = checkout -b
+	st = "status -s"
+  sta = "status"
+  ci = commit
+  br = branch
+  brls = branch -a -vv --color
+  df = diff
+  dfn = diff --name-only
+  lg = log --oneline --graph --decorate
+  week = log --since={1.week.ago} --pretty=oneline --numstat --decorate --abbrev-commit --graph
+  last = log --since={1.week.ago} --pretty=oneline --numstat --decorate --abbrev-commit --graph -3
+	pu = !"git fetch origin -v; git fetch upstream -v; git merge upstream/master"
+	po = !"git fetch origin -v;"
+
+  # check out MASTER FIRST
+  # pulls, rebases, and updates any submodules (if approp)
+	up = !git pull --rebase --prune $@ && git submodule update --init --recursive
+	# like stash; only a real commit. all changes.
+	save = !git add -A && git commit -m 'SAVEPOINT'
+	# like stash; only a real commit. only tracked changes
+	wip = commit -am "WIP"
+	# like save but can add own commit message
+	cm = !git add -A && git commit -m
+	# reset back one commit; but keep changes in Working directory
+	# use when coming back after save/wip (above)
+	undo = reset HEAD~1 --mixed
+	# or go back to before save
+	wipe = !git add -A && git commit -qm 'WIPE SAVEPOINT' && git reset HEAD~1 --hard
+
+	# simple push message
+	shipit = push origin master
+	# push all branches
+	ship = push --all
+
+	# remove local branches that have been merged into the given branch
+  # or master as a default.
+	bclean = "!f() { git branch --merged ${1-master} | grep -v " ${1-master}$" | xargs git branch -d; }; f"
+
+	# checks out master, pulls, prunes and rebases
+	# removes merged branches.
+	bdone = "!f() { git checkout ${1-master} && git up && git bclean ${1-master}; }; f"
+
+	# remotes
+	rem =  remote add upstream
